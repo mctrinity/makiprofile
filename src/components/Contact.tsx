@@ -13,15 +13,18 @@ export default function Contact() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (status === "sending") return;
+
     setError(null);
     setStatus("sending");
 
     const form = e.currentTarget;
     const data = new FormData(form);
+
     const payload = {
-      name: String(data.get("name") ?? ""),
-      email: String(data.get("email") ?? ""),
-      message: String(data.get("message") ?? ""),
+      name: String(data.get("name") ?? "").trim(),
+      email: String(data.get("email") ?? "").trim(),
+      message: String(data.get("message") ?? "").trim(),
       company: String(data.get("company") ?? ""), // honeypot
     };
 
@@ -29,18 +32,29 @@ export default function Contact() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // cache not required, but explicit no-store avoids any caching proxies
+        cache: "no-store",
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || "Failed to send");
+        let serverMsg = "Failed to send";
+        try {
+          const j = (await res.json()) as unknown;
+          if (j && typeof j === "object" && "error" in j && typeof (j as any).error === "string") {
+            serverMsg = (j as { error: string }).error;
+          }
+        } catch {
+          /* ignore JSON parse errors */
+        }
+        throw new Error(serverMsg);
       }
 
       setStatus("sent");
       form.reset();
-    } catch (err: any) {
-      setError(err?.message || "Something went wrong");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      setError(msg);
       setStatus("error");
     }
   }
@@ -66,6 +80,7 @@ export default function Contact() {
         <div className="lg:col-span-7">
           <form
             onSubmit={handleSubmit}
+            aria-busy={status === "sending"}
             className="grid gap-4 rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800"
           >
             {/* Honeypot */}
@@ -130,16 +145,17 @@ export default function Contact() {
                 {status === "sending" ? "Sending…" : "Send message"}
               </button>
 
-              {status === "sent" && (
-                <span className="text-sm text-emerald-600 dark:text-emerald-400">
-                  Sent! I’ll reply soon.
-                </span>
-              )}
-              {status === "error" && (
-                <span className="text-sm text-red-600 dark:text-red-400">
-                  {error ?? "Something went wrong"}
-                </span>
-              )}
+              {/* Live region for status messages */}
+              <span className="text-sm" aria-live="polite">
+                {status === "sent" && (
+                  <span className="text-emerald-600 dark:text-emerald-400">Sent! I’ll reply soon.</span>
+                )}
+                {status === "error" && (
+                  <span className="text-red-600 dark:text-red-400">
+                    {error ?? "Something went wrong"}
+                  </span>
+                )}
+              </span>
             </div>
           </form>
         </div>

@@ -1,8 +1,6 @@
-// src/components/Navbar.tsx
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 const links = [
   { href: "#about", label: "About" },
@@ -29,30 +27,18 @@ export default function Navbar() {
       }`}
     >
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+        {/* Use Link instead of <a href="/"> */}
         <Link href="/" aria-label="Home" className="inline-flex items-center">
           {/* Light logo */}
-          <Image
-            src="/dizonlogo.png"
-            alt="dizon"
-            width={120}
-            height={24}
-            priority
-            className="h-6 w-auto block dark:hidden"
-          />
+          <img src="/dizonlogo.png" alt="dizon" className="h-6 w-auto block dark:hidden" />
           {/* Dark logo */}
-          <Image
-            src="/dizonlogo.png"
-            alt="dizon"
-            width={120}
-            height={24}
-            priority
-            className="h-6 w-auto hidden dark:block"
-          />
+          <img src="/dizonlogo.png" alt="dizon" className="h-6 w-auto hidden dark:block" />
         </Link>
 
         <ul className="flex items-center gap-5 text-sm">
           {links.map((l) => (
             <li key={l.href}>
+              {/* hash links are fine as <a>; you can also use <Link href="#about"> if you prefer */}
               <a className="hover:underline underline-offset-4" href={l.href}>
                 {l.label}
               </a>
