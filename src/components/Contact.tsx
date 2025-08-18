@@ -7,6 +7,10 @@ import Section from "@/components/Section";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
+}
+
 export default function Contact() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +24,6 @@ export default function Contact() {
 
     const form = e.currentTarget;
     const data = new FormData(form);
-
     const payload = {
       name: String(data.get("name") ?? "").trim(),
       email: String(data.get("email") ?? "").trim(),
@@ -32,7 +35,6 @@ export default function Contact() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // cache not required, but explicit no-store avoids any caching proxies
         cache: "no-store",
         body: JSON.stringify(payload),
       });
@@ -40,12 +42,12 @@ export default function Contact() {
       if (!res.ok) {
         let serverMsg = "Failed to send";
         try {
-          const j = (await res.json()) as unknown;
-          if (j && typeof j === "object" && "error" in j && typeof (j as any).error === "string") {
-            serverMsg = (j as { error: string }).error;
+          const j: unknown = await res.json();
+          if (isRecord(j) && typeof j.error === "string") {
+            serverMsg = j.error;
           }
         } catch {
-          /* ignore JSON parse errors */
+          /* ignore json parse errors */
         }
         throw new Error(serverMsg);
       }
@@ -145,15 +147,12 @@ export default function Contact() {
                 {status === "sending" ? "Sending…" : "Send message"}
               </button>
 
-              {/* Live region for status messages */}
               <span className="text-sm" aria-live="polite">
                 {status === "sent" && (
                   <span className="text-emerald-600 dark:text-emerald-400">Sent! I’ll reply soon.</span>
                 )}
                 {status === "error" && (
-                  <span className="text-red-600 dark:text-red-400">
-                    {error ?? "Something went wrong"}
-                  </span>
+                  <span className="text-red-600 dark:text-red-400">{error ?? "Something went wrong"}</span>
                 )}
               </span>
             </div>
