@@ -1,0 +1,3 @@
+/* Optional: nicer typography for content areas */
+.prose a { text-decoration: underline; text-underline-offset: 4px; }
+.prose p { line-height: 1.75; }
