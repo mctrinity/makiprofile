@@ -20,7 +20,7 @@ export default function Footer() {
     <footer className="border-t border-zinc-200 dark:border-zinc-800">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-10 sm:flex-row sm:px-6 lg:px-8">
         <p className="text-sm text-zinc-600 dark:text-zinc-300">
-          © {year} Maki. All rights reserved.
+          © {year} Maki Dizon. All rights reserved.
         </p>
 
         <div className="flex items-center gap-3">

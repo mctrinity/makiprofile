@@ -12,7 +12,7 @@ import Contact from "@/components/Contact";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Maki — Portfolio",
+  title: "Maki Dizon",
   description: "Designer/Engineer portfolio of Maki",
 };
 
