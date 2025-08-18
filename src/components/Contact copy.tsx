@@ -5,44 +5,25 @@ import { useState } from "react";
 import Image from "next/image";
 import Section from "@/components/Section";
 
-type Status = "idle" | "sending" | "sent" | "error";
-
 export default function Contact() {
-  const [status, setStatus] = useState<Status>("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<"idle" | "sent">("idle");
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError(null);
-    setStatus("sending");
+    const data = new FormData(e.currentTarget);
+    const name = String(data.get("name") ?? "");
+    const email = String(data.get("email") ?? "");
+    const message = String(data.get("message") ?? "");
+    const honeypot = String(data.get("company") ?? ""); // spam trap
+    if (honeypot) return;
 
-    const form = e.currentTarget;
-    const data = new FormData(form);
-    const payload = {
-      name: String(data.get("name") ?? ""),
-      email: String(data.get("email") ?? ""),
-      message: String(data.get("message") ?? ""),
-      company: String(data.get("company") ?? ""), // honeypot
-    };
+    const subject = encodeURIComponent(`Portfolio Inquiry from ${name}`);
+    const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`);
 
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || "Failed to send");
-      }
-
-      setStatus("sent");
-      form.reset();
-    } catch (err: any) {
-      setError(err?.message || "Something went wrong");
-      setStatus("error");
-    }
+    // Opens user's email client; replace with a server action/service if you want real submissions
+    window.location.href = `mailto:hello@example.com?subject=${subject}&body=${body}`;
+    setStatus("sent");
+    e.currentTarget.reset();
   }
 
   return (
@@ -51,23 +32,21 @@ export default function Contact() {
         {/* Left: image */}
         <div className="lg:col-span-5">
           <div className="relative w-full overflow-hidden rounded-2xl h-[320px] sm:h-[360px] lg:h-[400px]">
-            <Image
-              src="/contact.png"
-              alt="Get in touch"
-              fill
-              sizes="(min-width:1024px) 40vw, 100vw"
-              className="object-cover"
-              priority={false}
-            />
-          </div>
+          <Image
+            src="/contact.png"
+            alt="Get in touch"
+            fill
+            sizes="(min-width:1024px) 40vw, 100vw"
+            className="object-cover"
+            priority={false}
+          />
+        </div>
+
         </div>
 
         {/* Right: form */}
         <div className="lg:col-span-7">
-          <form
-            onSubmit={handleSubmit}
-            className="grid gap-4 rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800"
-          >
+          <form onSubmit={handleSubmit} className="grid gap-4 rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
             {/* Honeypot */}
             <input
               type="text"
@@ -124,20 +103,13 @@ export default function Contact() {
             <div className="flex items-center gap-3">
               <button
                 type="submit"
-                disabled={status === "sending"}
-                className="rounded-xl bg-[#077777] px-4 py-2 text-sm font-medium text-white hover:bg-[#066666] disabled:opacity-60"
+                className="rounded-xl bg-[#077777] px-4 py-2 text-sm font-medium text-white hover:bg-[#066666]"
               >
-                {status === "sending" ? "Sending…" : "Send message"}
+                Send message
               </button>
-
               {status === "sent" && (
-                <span className="text-sm text-emerald-600 dark:text-emerald-400">
-                  Sent! I’ll reply soon.
-                </span>
-              )}
-              {status === "error" && (
-                <span className="text-sm text-red-600 dark:text-red-400">
-                  {error ?? "Something went wrong"}
+                <span className="text-sm text-zinc-600 dark:text-zinc-300">
+                  Thanks! Your email app should have opened.
                 </span>
               )}
             </div>
