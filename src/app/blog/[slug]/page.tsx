@@ -10,13 +10,12 @@ export async function generateStaticParams() {
   return getAllSlugs(); // [{ slug }]
 }
 
-// Next 15 requires awaiting params in dynamic routes
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<Params> | Params;
+  params: Promise<Params>;
 }) {
-  const { slug } = await Promise.resolve(params);
+  const { slug } = await params;
   const meta = getPostMetaBySlug(slug);
   if (!meta) return {};
   return {
@@ -33,9 +32,9 @@ export async function generateMetadata({
 export default async function BlogPostPage({
   params,
 }: {
-  params: Promise<Params> | Params;
+  params: Promise<Params>;
 }) {
-  const { slug } = await Promise.resolve(params);
+  const { slug } = await params;
   const meta = getPostMetaBySlug(slug);
   if (!meta) notFound();
 
@@ -46,8 +45,6 @@ export default async function BlogPostPage({
           {meta.date}
           {meta.readingTime ? ` • ${meta.readingTime}` : ""}
         </p>
-
-        {/* Render the MDX ONLY on the client */}
         <MDXClientLoader slug={slug} />
       </article>
     </Section>
