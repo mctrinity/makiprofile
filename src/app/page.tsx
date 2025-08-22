@@ -7,8 +7,13 @@ import ShapeDivider from "@/components/ShapeDivider";
 import BlogCard from "@/components/BlogCard";
 import About from "@/components/About";
 import Contact from "@/components/Contact";
-
-import { projects, features, blogPosts, type Feature, type BlogPost } from "@/lib/data";
+import {
+  projects,
+  features,
+  blogPosts,
+  type Feature,
+  type BlogPost,
+} from "@/lib/data";
 
 export default function HomePage() {
   const DIVIDER_HEIGHT = 150;
@@ -63,7 +68,6 @@ export default function HomePage() {
         </div>
       </Section>
 
-
       {/* Divider: Featured Projects -> next content */}
       <div
         className="relative mx-[calc(50%-50vw)] w-screen my-8 -mt-px"
@@ -78,14 +82,14 @@ export default function HomePage() {
       </div>
 
       <Section id="blog" title="Featured Blog">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
+        <div className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {blogPosts.map((post: BlogPost) => (
             <BlogCard key={post.slug} post={post} />
           ))}
         </div>
       </Section>
 
-            {/* Divider: Services -> Featured Blog (tinted) */}
+      {/* Divider: Blog -> About/Contact */}
       <div
         className="relative mx-[calc(50%-50vw)] w-screen my-8 -mb-px [&_svg]:rotate-180"
         style={{ height: DIVIDER_HEIGHT }}
@@ -98,9 +102,9 @@ export default function HomePage() {
         />
       </div>
 
+      {/* Only on homepage */}
       <About />
       <Contact />
-
     </>
   );
 }
