@@ -10,18 +10,32 @@ export async function generateStaticParams() {
   return getAllSlugs(); // [{ slug }]
 }
 
-export async function generateMetadata({ params }: { params: Promise<Params> }) {
-  const { slug } = await params;           // 👈 await params
+// Next 15 requires awaiting params in dynamic routes
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Params> | Params;
+}) {
+  const { slug } = await Promise.resolve(params);
   const meta = getPostMetaBySlug(slug);
   if (!meta) return {};
   return {
     title: `${meta.title} — Maki Dizon`,
     description: meta.description,
+    openGraph: {
+      title: meta.title,
+      description: meta.description,
+      images: meta.image ? [meta.image] : undefined,
+    },
   };
 }
 
-export default async function BlogPostPage({ params }: { params: Promise<Params> }) {
-  const { slug } = await params;           // 👈 await params
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<Params> | Params;
+}) {
+  const { slug } = await Promise.resolve(params);
   const meta = getPostMetaBySlug(slug);
   if (!meta) notFound();
 
@@ -32,7 +46,8 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
           {meta.date}
           {meta.readingTime ? ` • ${meta.readingTime}` : ""}
         </p>
-        {/* Render the MDX on the client */}
+
+        {/* Render the MDX ONLY on the client */}
         <MDXClientLoader slug={slug} />
       </article>
     </Section>

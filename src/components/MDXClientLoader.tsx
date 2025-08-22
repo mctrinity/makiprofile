@@ -15,14 +15,11 @@ export default function MDXClientLoader({ slug }: Props) {
 
   React.useEffect(() => {
     let cancelled = false;
-
     (async () => {
-      // Import the compiled MDX module for this slug
       const mod: unknown = await import(`@/content/blog/${slug}.mdx`);
       const c = (mod as MDXModule).default;
       if (!cancelled) setComp(() => c);
     })();
-
     return () => {
       cancelled = true;
     };

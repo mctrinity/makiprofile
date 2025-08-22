@@ -1,44 +1,47 @@
 // src/content/blog/registry.ts
-import type * as React from "react";
+// ❗ No MDX imports here
 
-// Types for the MDX module shape
-export type MDXModule = {
-  default: React.ComponentType<Record<string, unknown>>;
-  metadata: {
-    title: string;
-    description?: string;
-    date?: string;
-    readingTime?: string;
-    image?: string;
-  };
+export type PostMeta = {
+  slug: string;
+  title: string;
+  description?: string;
+  date?: string;
+  readingTime?: string;
+  image?: string;
 };
 
-// Import your posts (namespace import keeps both `default` and `metadata`)
-import * as devops from "./devops-starter.mdx";
-import * as platform from "./platform-engineering.mdx";
-import * as ai from "./ai-integration.mdx";
+// Keep this in sync with your actual files in src/content/blog/{slug}.mdx
+export const manifest: PostMeta[] = [
+  {
+    slug: "devops-starter",
+    title: "DevOps Starter",
+    description: "Spin up CI/CD, IaC, and observability the sane way.",
+    date: "2025-08-18",
+    readingTime: "4 min",
+    image: "/blog/devops-starter/cover.png",
+  },
+  {
+    slug: "platform-engineering",
+    title: "Platform Engineering for Small Teams",
+    description: "Golden paths, paved roads, and developer experience.",
+    date: "2025-08-19",
+    readingTime: "5 min",
+    image: "/blog/platform-engineering/cover.png",
+  },
+  {
+    slug: "ai-integration",
+    title: "AI Integration That Ships",
+    description: "Retrieval, function calling, evals—without the hype.",
+    date: "2025-08-20",
+    readingTime: "6 min",
+    image: "/blog/ai-integration/cover.png",
+  },
+];
 
-// Registry of modules
-const modules = {
-  "devops-starter": devops,
-  "platform-engineering": platform,
-  "ai-integration": ai,
-} as const;
-
-export type Slug = keyof typeof modules;
-
-export function getAllSlugs(): { slug: Slug }[] {
-  return Object.keys(modules).map((slug) => ({ slug: slug as Slug }));
+export function getAllSlugs() {
+  return manifest.map((p) => ({ slug: p.slug }));
 }
 
 export function getPostMetaBySlug(slug: string) {
-  const m = modules[slug as Slug] as unknown as MDXModule | undefined;
-  if (!m) return null;
-  return { slug, ...m.metadata };
-}
-
-export function getPostBySlug(slug: string) {
-  const m = modules[slug as Slug] as unknown as MDXModule | undefined;
-  if (!m) return null;
-  return m; // MDXModule
+  return manifest.find((p) => p.slug === slug) ?? null;
 }
