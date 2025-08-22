@@ -25,16 +25,6 @@ export type Feature = {
   badge?: string;
 };
 
-export type BlogPost = {
-  slug: string;
-  title: string;
-  excerpt: string;
-  date: string;         // ISO or pretty text
-  readingTime?: string; // e.g. "5 min read"
-  image?: string;       // /public path (optional)
-  href?: string;        // internal "/blog/slug" or external "https://…"
-};
-
 export const projects: Project[] = [
   {
     slug: "folio",
@@ -112,33 +102,5 @@ export const features: Feature[] = [
       "Embed LLMs into your product: retrieval, function calling, and evaluation. Build features that deliver value—not just a chat box.",
     emoji: "🤖",
     badge: "AI",
-  },
-];
-
-export const blogPosts: BlogPost[] = [
-  {
-    slug: "devops-starter",
-    title: "From Zero to CI/CD: A Practical DevOps Starter",
-    excerpt: "Ship faster with a minimal pipeline: lint, test, build, preview, and production gates.",
-    date: "2025-08-10",
-    readingTime: "6 min read",
-    // image: "/blog-devops.png", // drop a file in /public to enable
-    href: "/blog/devops-starter", // switch to real route later
-  },
-  {
-    slug: "platform-engineering",
-    title: "Golden Paths: Platform Engineering That Developers Love",
-    excerpt: "Standardize the boring; empower the creative. Patterns that reduce cognitive load.",
-    date: "2025-08-05",
-    readingTime: "7 min read",
-    href: "/blog/platform-engineering",
-  },
-  {
-    slug: "ai-integration",
-    title: "Pragmatic AI Integration: RAG Without the Hype",
-    excerpt: "Data prep, retrieval quality, and guardrails—the three pillars of successful AI features.",
-    date: "2025-08-01",
-    readingTime: "5 min read",
-    href: "/blog/ai-integration",
   },
 ];

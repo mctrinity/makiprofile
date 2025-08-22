@@ -1,7 +1,16 @@
-import type { NextConfig } from "next";
+// next.config.ts
+import createMDX from "@next/mdx";
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const withMDX = createMDX({
+  extension: /\.mdx?$/,
+  options: {
+    // optional: add remark/rehype plugins here
+  },
+});
+
+const nextConfig = {
+  // keep your existing config here
+  // (no need to change pageExtensions for App Router)
 };
 
-export default nextConfig;
+export default withMDX(nextConfig);

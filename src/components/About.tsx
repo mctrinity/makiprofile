@@ -9,13 +9,17 @@ export default function About() {
   ];
 
   return (
-    <Section id="about" title="About Me">
+    <Section
+      id="about"
+      title="About Me"
+      className="bg-[#077777]/5 dark:bg-[#077777]/10"
+    >
       <div className="grid items-center gap-8 lg:grid-cols-12">
         {/* Image */}
         <div className="lg:col-span-5">
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
             <Image
-              src="/about.png"              // place your image in /public
+              src="/about.png" // place your image in /public
               alt="Maki — developer/designer based in Manila"
               fill
               sizes="(min-width:1024px) 40vw, 100vw"
