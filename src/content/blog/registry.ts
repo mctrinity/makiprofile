@@ -1,50 +1,44 @@
 // src/content/blog/registry.ts
-export type PostMeta = {
-  slug: string;
-  title: string;
-  description?: string;
-  date?: string;
-  readingTime?: string;
-  image?: string;
+import type * as React from "react";
+
+// Types for the MDX module shape
+export type MDXModule = {
+  default: React.ComponentType<Record<string, unknown>>;
+  metadata: {
+    title: string;
+    description?: string;
+    date?: string;
+    readingTime?: string;
+    image?: string;
+  };
 };
 
-// Pure metadata (no MDX imports here)
-export const postsMeta: PostMeta[] = [
-  {
-    slug: "devops-starter",
-    title: "From Zero to CI/CD: A Practical DevOps Starter",
-    description: "A minimal pipeline you can ship today.",
-    date: "2025-08-10",
-    readingTime: "6 min read",
-    // image: "/blog/devops/cover.png",
-  },
-  {
-    slug: "platform-engineering",
-    title: "Golden Paths: Platform Engineering That Developers Love",
-    description: "Reduce cognitive load with opinionated defaults.",
-    date: "2025-08-05",
-    readingTime: "7 min read",
-  },
-  {
-    slug: "ai-integration",
-    title: "Pragmatic AI Integration: RAG Without the Hype",
-    description: "Data prep, retrieval quality, and guardrails.",
-    date: "2025-08-01",
-    readingTime: "5 min read",
-  },
-];
+// Import your posts (namespace import keeps both `default` and `metadata`)
+import * as devops from "./devops-starter.mdx";
+import * as platform from "./platform-engineering.mdx";
+import * as ai from "./ai-integration.mdx";
 
-// Lazy MDX loaders (no imports executed on the server)
-export const postLoaders: Record<string, () => Promise<{ default: any }>> = {
-  "devops-starter": () => import("./devops-starter.mdx"),
-  "platform-engineering": () => import("./platform-engineering.mdx"),
-  "ai-integration": () => import("./ai-integration.mdx"),
-};
+// Registry of modules
+const modules = {
+  "devops-starter": devops,
+  "platform-engineering": platform,
+  "ai-integration": ai,
+} as const;
 
-export function getPostMetaBySlug(slug: string) {
-  return postsMeta.find((p) => p.slug === slug);
+export type Slug = keyof typeof modules;
+
+export function getAllSlugs(): { slug: Slug }[] {
+  return Object.keys(modules).map((slug) => ({ slug: slug as Slug }));
 }
 
-export function getAllSlugs() {
-  return postsMeta.map((p) => ({ slug: p.slug }));
+export function getPostMetaBySlug(slug: string) {
+  const m = modules[slug as Slug] as unknown as MDXModule | undefined;
+  if (!m) return null;
+  return { slug, ...m.metadata };
+}
+
+export function getPostBySlug(slug: string) {
+  const m = modules[slug as Slug] as unknown as MDXModule | undefined;
+  if (!m) return null;
+  return m; // MDXModule
 }

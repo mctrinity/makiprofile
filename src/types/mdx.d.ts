@@ -1,13 +1,16 @@
 // src/types/mdx.d.ts
 declare module "*.mdx" {
-  import type { FC, ComponentType } from "react";
+  import * as React from "react";
+
   export const metadata: {
     title: string;
     description?: string;
     date?: string;
     readingTime?: string;
-    image?: string;
+    image?: string; // e.g. /blog/ai/cover.png
   };
-  const MDXContent: FC<{ components?: Record<string, ComponentType<any>> }>;
+
+  // Use a safe prop shape instead of `any`
+  const MDXContent: React.ComponentType<Record<string, unknown>>;
   export default MDXContent;
 }

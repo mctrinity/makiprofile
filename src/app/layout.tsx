@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Maki Dizon",
   description: "Designer/Engineer portfolio of Maki",
+  icons: { icon: "/favicon.ico" }, // will use /public/favicon.ico
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

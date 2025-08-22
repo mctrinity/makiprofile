@@ -1,34 +1,33 @@
 // src/components/MDXClientLoader.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import type { ComponentType } from "react";
-import { postLoaders } from "@/content/blog/registry";
+import * as React from "react";
 
-export default function MDXClientLoader({ slug }: { slug: string }) {
-  const [Comp, setComp] = useState<ComponentType<any> | null>(null);
+type Props = { slug: string };
 
-  useEffect(() => {
-    let mounted = true;
-    const load = postLoaders[slug];
-    if (!load) return;
+type MDXModule = {
+  default: React.ComponentType<Record<string, unknown>>;
+};
 
-    load().then((mod) => {
-      if (mounted) setComp(() => mod.default);
-    });
+export default function MDXClientLoader({ slug }: Props) {
+  const [Comp, setComp] =
+    React.useState<React.ComponentType<Record<string, unknown>> | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      // Import the compiled MDX module for this slug
+      const mod: unknown = await import(`@/content/blog/${slug}.mdx`);
+      const c = (mod as MDXModule).default;
+      if (!cancelled) setComp(() => c);
+    })();
 
     return () => {
-      mounted = false;
+      cancelled = true;
     };
   }, [slug]);
 
-  if (!postLoaders[slug]) {
-    return <p className="text-sm text-red-600">Post not found.</p>;
-  }
-
-  if (!Comp) {
-    return <p className="text-sm text-zinc-500">Loading…</p>;
-  }
-
+  if (!Comp) return null;
   return <Comp />;
 }
