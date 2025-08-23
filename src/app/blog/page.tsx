@@ -5,7 +5,7 @@ import BlogCard from "@/components/BlogCard";
 import { siteUrl } from "@/lib/siteUrl";
 import { blogPosts, type BlogPost } from "@/lib/data";
 
-export const revalidate = 60 * 60 * 24; // re-gen at most once/day
+export const revalidate = 86400; // ✅ 24h as a literal
 
 export const metadata: Metadata = {
   title: "Blog — Maki Dizon",
@@ -36,7 +36,7 @@ export default function BlogIndex() {
 
   return (
     <Section id="blog-index" title="Blog">
-      {/* Canonical + JSON-LD in DOM (helps some crawlers) */}
+      {/* Optional: you can remove this <link> since metadata.alternates.canonical already sets canonical */}
       <link rel="canonical" href={`${siteUrl}/blog`} />
       <script
         type="application/ld+json"
