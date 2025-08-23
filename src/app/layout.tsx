@@ -3,10 +3,12 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { siteUrl } from "@/lib/siteUrl";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Maki Dizon",
   description: "Designer/Engineer portfolio of Maki",
   icons: { icon: "/favicon.ico" }, // will use /public/favicon.ico
