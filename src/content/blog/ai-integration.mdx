@@ -1,14 +1,177 @@
 export const metadata = {
-  title: "Pragmatic AI Integration: RAG Without the Hype",
-  description: "Data prep, retrieval quality, and guardrails.",
-  date: "2025-08-01",
-  readingTime: "5 min read",
+title: "Pragmatic AI Integration: RAG Without the Hype",
+description: "Data prep, retrieval quality, and guardrails.",
+date: "2025-08-01",
+readingTime: "5 min read",
+image: "/blog/ai-integration/cover.png",
+imageAlt: "Screenshot of AI workflows",
+tintClass: "bg-\[#077777]/5 dark\:bg-\[#077777]/10",
 };
 
 # Pragmatic AI Integration: RAG Without the Hype
 
-Focus on:
+Most failed AI features suffer from three things: **messy data**, **weak retrieval**, and **no guardrails**. Here’s a compact, production‑oriented playbook you can actually ship.
 
-1. Data prep & chunking
-2. Retrieval evaluation
-3. Guardrails & observability
+---
+
+## 1) Data prep & chunking
+
+Good retrieval starts with predictable, labeled chunks.
+
+**Targets**
+
+* Chunk size: **400–800 tokens** with **10–15% overlap**
+* Normalize text (strip HTML, collapse whitespace, keep headings)
+* Attach **rich metadata**: source, path, section, updatedAt, version
+
+**Do**
+
+* Keep headings with their paragraphs
+* Store language + mime type for multi‑format corpora
+* Deduplicate near‑identical chunks (e.g., by SimHash)
+
+**Avoid**
+
+* Giant chunks (recall suffers) or tiny ones (precision suffers)
+* Blindly embedding images/tables without captions/alt‑text
+
+```ts
+// naive sentence-based chunker with soft overlap
+export function chunkText(input: string, targetTokens = 600, overlapTokens = 80) {
+  const sentences = input
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/);
+
+  const chunks: string[] = [];
+  let cur: string[] = [];
+  let estimate = 0; // rough token estimate ~ words * 0.75
+
+  const est = (s: string) => Math.ceil(s.split(/\s+/).length * 0.75);
+
+  for (const s of sentences) {
+    const w = est(s);
+    if (estimate + w > targetTokens && cur.length) {
+      chunks.push(cur.join(" "));
+      // overlap
+      while (estimate > overlapTokens && cur.length) {
+        const popped = cur.shift()!;
+        estimate -= est(popped);
+      }
+    }
+    cur.push(s);
+    estimate += w;
+  }
+  if (cur.length) chunks.push(cur.join(" "));
+  return chunks;
+}
+```
+
+**Embedding**
+
+* Choose a model with the right **dimension** for your store (e.g., 768/1024/3072)
+* Persist: `id`, `embedding`, `text`, and **metadata** (source, section, tags)
+* Batch inserts (100–500) and retry on transient errors
+
+---
+
+## 2) Retrieval evaluation
+
+You don’t improve what you don’t measure. Create a small **golden set** of (question, answer, supporting‑chunk IDs).
+
+**Offline metrics**
+
+* **Recall\@k**: does any gold chunk appear in top‑k?
+* **MRR / nDCG**: rank‑aware quality
+* **Coverage**: % of queries where retrieval returns anything useful
+
+```ts
+// recall@k given ground truth ids
+export function recallAtK(topK: string[], gold: string[]): number {
+  const hits = topK.some((id) => gold.includes(id));
+  return hits ? 1 : 0;
+}
+```
+
+**Online signals**
+
+* Thumbs up/down, copy events, dwell time
+* Tool success rate (if you call functions) and error classes
+* Guardrail triggers (PII, jailbreaks)
+
+Iterate: adjust chunking, embeddings, filters, and **reranking** (e.g., BM25 → dense rerank → LLM cite‑aware rerank).
+
+---
+
+## 3) Guardrails & observability
+
+Ship with guardrails from day one:
+
+* **Input filters**: profanity, PII redaction, prompt‑injection heuristics
+* **Output constraints**: JSON schema, allowed tool set, safe‑mode prompts
+* **Budget control**: per‑user and per‑route rate limits & token caps
+* **Audit logs**: store query, retrieved contexts, model, latency, cost
+
+```ts
+// example shape guard with Zod
+import { z } from "zod";
+export const AnswerSchema = z.object({
+  answer: z.string().max(2000),
+  citations: z.array(z.object({ id: z.string(), score: z.number() })).max(10),
+});
+```
+
+---
+
+## Baseline RAG flow (API shape)
+
+```ts
+// /api/ask (pseudo-code)
+export async function POST(req: Request) {
+  const { question } = await req.json();
+  // 1) retrieve
+  const candidates = await vectorStore.search({
+    query: question,
+    topK: 12,
+    filters: { lang: "en" },
+  });
+  // 2) (optional) rerank to top 6
+  const top = await rerank(question, candidates, 6);
+  // 3) generate with citations
+  const completion = await llm.generate({ question, context: top });
+  // 4) validate & log
+  const parsed = AnswerSchema.safeParse(completion);
+  if (!parsed.success) return Response.json({ error: "format" }, { status: 400 });
+  await logEvent({ question, top, completion });
+  return Response.json(parsed.data);
+}
+```
+
+---
+
+## Cost & performance tips
+
+* **Cache** embeddings per document version
+* Stream responses; cut off when confidence low or budget hit
+* Use smaller **rerank** models to save on tokens
+* Prefer **server‑side** retrieval; don’t ship your keys client‑side
+
+---
+
+## Common pitfalls
+
+* Treating the LLM as a search engine (it isn’t)
+* Ignoring **document freshness** and invalidation
+* No feedback loop → quality stalls
+
+---
+
+## Launch checklist
+
+* [ ] Chunks labeled with source + section
+* [ ] Golden set with at least 50 queries
+* [ ] Recall\@k ≥ 0.8 on golden set
+* [ ] JSON‑schema‑validated outputs
+* [ ] Basic abuse/PII guardrails
+* [ ] Dashboards: latency, cost, hit rate, failures
+
+*Keep the loop tight: collect → evaluate → adjust. That’s the unglamorous path to useful AI.*

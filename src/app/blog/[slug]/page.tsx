@@ -1,6 +1,6 @@
 // src/app/blog/[slug]/page.tsx
-
 import type { Metadata } from "next";
+import Image from "next/image"; // ⬅️ add this
 import { notFound } from "next/navigation";
 import Section from "@/components/Section";
 import { siteUrl } from "@/lib/siteUrl";
@@ -53,7 +53,6 @@ export default async function BlogPostPage(
 
   const canonical = `${siteUrl}/blog/${slug}`;
 
-  // JSON-LD
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -76,6 +75,8 @@ export default async function BlogPostPage(
       { "@type": "ListItem", position: 3, name: meta.title, item: canonical },
     ],
   };
+
+  const tint = meta.tintClass ?? "bg-[#077777]/5 dark:bg-[#077777]/10";
 
   return (
     <Section id="post" title={meta.title}>
@@ -100,7 +101,29 @@ export default async function BlogPostPage(
         ]}
       />
 
-      <article className="prose max-w-none dark:prose-invert">
+      {/* 🔽 Post hero image with optional tint background */}
+      {meta.image && (
+        <div className={`mb-8 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 ${tint}`}>
+          <div className="relative h-56 w-full sm:h-72 lg:h-96">
+            <Image
+              src={meta.image}
+              alt={meta.imageAlt ?? meta.title}
+              fill
+              sizes="(min-width:1024px) 960px, 100vw"
+              className="object-cover"
+              priority
+            />
+          </div>
+        </div>
+      )}
+
+      <article
+        className="prose prose-zinc max-w-none dark:prose-invert
+                   prose-headings:scroll-mt-28
+                   prose-a:font-medium prose-a:no-underline hover:prose-a:underline
+                   prose-img:rounded-2xl prose-img:border prose-img:border-zinc-200 dark:prose-img:border-zinc-800
+                   prose-pre:shadow-sm"
+      >
         <p className="mt-0 text-sm text-zinc-500">
           {meta.date}
           {meta.readingTime ? ` • ${meta.readingTime}` : ""}

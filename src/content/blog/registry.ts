@@ -5,9 +5,11 @@ export type PostMeta = {
   slug: string;
   title: string;
   description?: string;
-  date?: string;
-  readingTime?: string;
-  image?: string;
+  date?: string;         // ISO yyyy-mm-dd preferred
+  readingTime?: string;  // e.g. "5 min"
+  image?: string;        // e.g. "/blog/devops-starter/cover.png"
+  imageAlt?: string;     // optional alt text
+  tintClass?: string;    // optional bg tint utility (e.g. "bg-[#077777]/5 dark:bg-[#077777]/10")
 };
 
 // Keep this in sync with your actual files in src/content/blog/{slug}.mdx
@@ -19,6 +21,8 @@ export const manifest: PostMeta[] = [
     date: "2025-08-18",
     readingTime: "4 min",
     image: "/blog/devops-starter/cover.png",
+    imageAlt: "Pipelines and infra starter layout",
+    tintClass: "bg-[#077777]/5 dark:bg-[#077777]/10",
   },
   {
     slug: "platform-engineering",
@@ -27,6 +31,8 @@ export const manifest: PostMeta[] = [
     date: "2025-08-19",
     readingTime: "5 min",
     image: "/blog/platform-engineering/cover.png",
+    imageAlt: "Internal developer platform diagram",
+    tintClass: "bg-[#077777]/5 dark:bg-[#077777]/10",
   },
   {
     slug: "ai-integration",
@@ -35,13 +41,20 @@ export const manifest: PostMeta[] = [
     date: "2025-08-20",
     readingTime: "6 min",
     image: "/blog/ai-integration/cover.png",
+    imageAlt: "App wiring LLM tasks and tools",
+    tintClass: "bg-[#077777]/5 dark:bg-[#077777]/10",
   },
 ];
 
-export function getAllSlugs() {
+export function getAllSlugs(): { slug: string }[] {
   return manifest.map((p) => ({ slug: p.slug }));
 }
 
-export function getPostMetaBySlug(slug: string) {
+export function getAllPosts(): PostMeta[] {
+  // Optional: newest first if dates exist
+  return [...manifest].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+}
+
+export function getPostMetaBySlug(slug: string): PostMeta | null {
   return manifest.find((p) => p.slug === slug) ?? null;
 }
