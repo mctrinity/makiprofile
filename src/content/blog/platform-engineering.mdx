@@ -1,14 +1,301 @@
 export const metadata = {
-  title: "Golden Paths: Platform Engineering That Developers Love",
-  description: "Reduce cognitive load with opinionated defaults.",
-  date: "2025-08-05",
-  readingTime: "7 min read",
+title: "Golden Paths: Platform Engineering That Developers Love",
+description: "Reduce cognitive load with opinionated defaults.",
+date: "2025-08-05",
+readingTime: "9 min read",
+image: "/blog/platform-engineering/cover.png",
+imageAlt: "Screenshot of Platform Engineering workflows",
+tintClass: "bg-\[#077777]/5 dark\:bg-\[#077777]/10"
 };
 
 # Golden Paths: Platform Engineering That Developers Love
 
-Great platforms make the **right way the easy way**:
+Developers don’t want more choices—they want **fewer decisions** to get to value faster. That’s the promise of platform engineering: make the **right way the easy way** with paved roads that scale.
 
-- Templates and scaffolds
-- Paved roads for CI/CD
-- Observability from day one
+This post shows how to design “golden paths” that teams *actually* enjoy using—covering **templates**, **CI/CD**, **observability**, **secrets/config**, **security**, and the **adoption playbook**.
+
+---
+
+## What a “golden path” really means
+
+A golden path is a **documented, supported** and **automated** route to production that fits most teams most of the time.
+
+Key properties:
+
+* **Opinionated defaults**: sensible tech + config choices that remove yak-shaving.
+* **Batteries-included DX**: lint, tests, build, preview deploys, and monitoring from day one.
+* **Escape hatches**: extension points when teams *do* need to go off-road.
+* **Documentation + ownership**: one page to understand, one repo to start, one team to support.
+
+> You’re not building a framework. You’re packaging proven decisions.
+
+---
+
+## Start with a template people want to use
+
+Make a single `template` repo that’s instantly useful. Here’s a minimal full-stack Next.js shape (adapt to your stack):
+
+```txt
+my-app/
+├─ .github/
+│  └─ workflows/ci.yml
+├─ infra/                # IaC (optional: terraform/bicep/cdk)
+│  └─ README.md
+├─ src/
+│  ├─ app/
+│  │  ├─ layout.tsx
+│  │  └─ page.tsx
+│  ├─ components/
+│  └─ lib/
+├─ public/
+├─ .env.example
+├─ package.json
+├─ tsconfig.json
+├─ next.config.ts
+└─ README.md
+```
+
+### Include the boring stuff so users don’t have to
+
+* **Preconfigured ESLint & Prettier**
+* **TypeScript strict mode**
+* **Absolute imports** (`@/*`)
+* **Standard scripts**
+
+```json
+{
+  "scripts": {
+    "dev": "next dev --turbo",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  }
+}
+```
+
+Add a **one-screen README** with “Run locally”, “Secrets”, and “Deploy” sections. Keep it ruthlessly short with links to platform docs.
+
+---
+
+## CI/CD: previews by default, production with confidence
+
+Golden paths ship with **previews for every pull request** and **gates** for production.
+
+Below is an example GitHub Actions pipeline that most teams can live with. If you’re on GitLab/Bitbucket/Azure DevOps, the shape is similar.
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+
+  # Optional: deploy previews via your host's official integration
+  # For Vercel, the Git integration usually handles this automatically.
+```
+
+**Production gate ideas:**
+
+* Require ✅ checks on `checks` job
+* Require review from “platform” code owners for infra changes
+* Require “Deploy” PR labels for manual, explicit production deploys
+
+---
+
+## Observability on day one
+
+Don’t make teams ask for logging or metrics—bake it in.
+
+* **Logs**: a single interface (`lib/logger.ts`) so you can swap providers.
+* **Metrics**: a tiny helper for counters/histograms (requests, latency).
+* **Tracing**: set up OpenTelemetry once; expose a `withTracing(handler)` wrapper.
+
+```ts
+// src/lib/logger.ts
+export const log = {
+  info: (msg: string, meta?: Record<string, unknown>) =>
+    console.log(JSON.stringify({ level: "info", msg, ...meta })),
+  error: (msg: string, meta?: Record<string, unknown>) =>
+    console.error(JSON.stringify({ level: "error", msg, ...meta }))
+};
+```
+
+```ts
+// Example usage
+log.info("user_signed_in", { userId, provider: "github" });
+```
+
+Document **how to find logs** and **what dashboards exist**—and link them from the README.
+
+---
+
+## Secrets & configuration
+
+Make config boring and consistent.
+
+* Ship a **`.env.example`** with every key a dev will need:
+
+  ```env
+  # .env.example
+  NODE_ENV=development
+  NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+  DATABASE_URL=postgresql://user:pass@localhost:5432/app
+  RESEND_API_KEY=
+  ```
+
+* Use **env-var schema validation** so teams fail fast:
+
+  ```ts
+  // src/lib/env.ts
+  import { z } from "zod";
+
+  const envSchema = z.object({
+    NODE_ENV: z.enum(["development", "test", "production"]),
+    NEXT_PUBLIC_SITE_URL: z.string().url(),
+    DATABASE_URL: z.string().url().optional(),
+    RESEND_API_KEY: z.string().optional()
+  });
+
+  export const env = envSchema.parse(process.env);
+  ```
+
+* Provide a single **“Where secrets live”** doc: local `.env`, CI as masked secrets, prod in your secret manager.
+
+---
+
+## Security guardrails (without being a cop)
+
+* **Default headers** via middleware (e.g., CSP, `X-Frame-Options`, `Referrer-Policy`).
+* **Auth** skeleton (even a simple email-link + session baseline).
+* **Dependency policy**: lockfile, automated PRs for critical updates.
+* **Minimal permissions**: principle of least privilege in CI and IaC.
+
+```ts
+// middleware.ts (example headers)
+import { NextResponse } from "next/server";
+export function middleware(req: Request) {
+  const res = NextResponse.next();
+  res.headers.set("X-Frame-Options", "SAMEORIGIN");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  return res;
+}
+```
+
+---
+
+## Developer experience touches
+
+Small things compound:
+
+* **Project scripts**: `npm run dev`, `npm run test:watch`—no docs needed.
+* **Scaffold commands**: `npm run generate component Button`.
+* **Error pages**: friendly 404/500 so previews aren’t mysterious.
+* **Template variants**: `web-api`, `web-ui`, `worker`, `cron`—same conventions.
+
+---
+
+## Build vs. buy
+
+Your platform isn’t a product—your **developers are the product**. Buy where it reduces toil (hosting, auth, email), build where it differentiates.
+
+A good heuristic:
+
+* **Buy**: commodity plumbing (CI runners, email, basic auth providers, analytics).
+* **Build**: org-specific glue (golden templates, policy as code, DX tooling).
+
+---
+
+## Adoption playbook
+
+A good golden path spreads by word of mouth:
+
+1. **Run a workshop:** 60 minutes, start from zero, deploy a preview, open logs.
+2. **Shadow a team:** take their next project onto the paved road; fix papercuts.
+3. **Define a good exit:** if the template doesn’t fit, show *how* to extend or opt out.
+4. **Measure** (see below) and publish wins every quarter.
+
+---
+
+## What to measure (so you know it’s working)
+
+* **Time to first preview** (from repo creation)
+* **Time to production**
+* **MTTR** (mean time to repair) on incidents
+* **Template adoption rate** (% of new services on the paved road)
+* **Developer NPS** (a 30-second survey embedded in docs)
+
+Keep a tiny dashboard; celebrate the wins.
+
+---
+
+## Anti-patterns to avoid
+
+* **Framework sprawl:** ten choices masquerading as “freedom”
+* **Secret snowflakes:** one-off exceptions that become the norm
+* **Doc rot:** long tutorial pages that drift from reality
+* **Gatekeeping:** platform as a ticket queue instead of a product
+
+---
+
+## A minimal IaC starter (optional)
+
+If your teams need persistent infra (DB/queues), give them a minimal Terraform/Bicep/CDK sample they can copy, not a blank page.
+
+```hcl
+# infra/main.tf (example)
+provider "aws" {
+  region = var.region
+}
+
+resource "aws_sqs_queue" "events" {
+  name = "app-events"
+}
+
+output "queue_url" {
+  value = aws_sqs_queue.events.id
+}
+```
+
+Link it from the README and make it optional.
+
+---
+
+## Checklist: is your golden path ready?
+
+* [ ] `template` repo that boots in < 5 minutes
+* [ ] CI with lint + test + build + **preview** deploys
+* [ ] Logging + metrics + tracing docs
+* [ ] `.env.example` + env schema validation
+* [ ] Security headers + basic auth baseline
+* [ ] One-page docs + ownership info
+* [ ] Metrics wired (TTFP, TTP, MTTR, adoption, NPS)
+
+---
+
+## Closing thoughts
+
+Your paved road should feel **boring in the best way**. When teams stop talking about tooling and get back to shipping features, you know you’re on the right path.
+
+> Make the right way the easy way—and then get out of the way.

@@ -31,8 +31,10 @@ export type BlogPost = {
   excerpt: string;
   date: string;         // ISO or pretty text
   readingTime?: string; // e.g. "5 min read"
-  image?: string;       // /public path (optional)
-  href?: string;        // internal "/blog/slug" or external "https://…"
+  href: string;
+  image?: string;
+  imageAlt?: string;
+
 };
 
 export const projects: Project[] = [
@@ -122,8 +124,9 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Ship faster with a minimal pipeline: lint, test, build, preview, and production gates.",
     date: "2025-08-10",
     readingTime: "6 min read",
-    // image: "/blog-devops.png", // drop a file in /public to enable
-    href: "/blog/devops-starter", // switch to real route later
+    image: "/blog/devops-starter/cover.png",
+    imageAlt: "Screenshot of Platform Engineering workflows",
+    href: "/blog/devops-starter",
   },
   {
     slug: "platform-engineering",
@@ -131,6 +134,8 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Standardize the boring; empower the creative. Patterns that reduce cognitive load.",
     date: "2025-08-05",
     readingTime: "7 min read",
+    image: "/blog/platform-engineering/cover.png",
+    imageAlt: "Screenshot of Platform Engineering workflows",
     href: "/blog/platform-engineering",
   },
   {
@@ -139,6 +144,8 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Data prep, retrieval quality, and guardrails—the three pillars of successful AI features.",
     date: "2025-08-01",
     readingTime: "5 min read",
+    image: "/blog/ai-integration/cover.png",
+    imageAlt: "Screenshot of AI workflows",
     href: "/blog/ai-integration",
   },
 ];

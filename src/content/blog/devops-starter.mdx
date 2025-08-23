@@ -1,16 +1,191 @@
 export const metadata = {
-  title: "From Zero to CI/CD: A Practical DevOps Starter",
-  description: "A minimal pipeline you can ship today.",
-  date: "2025-08-10",
-  readingTime: "6 min read",
+title: "From Zero to CI/CD: A Practical DevOps Starter",
+description: "A minimal pipeline you can ship today.",
+date: "2025-08-10",
+readingTime: "6 min read",
+image: "/blog/devops-starter/cover.png",
+imageAlt: "Screenshot of DevOps workflows",
+tintClass: "bg-\[#077777]/5 dark\:bg-\[#077777]/10",
 };
 
 # From Zero to CI/CD: A Practical DevOps Starter
 
 A tiny, pragmatic pipeline:
 
-- Lint → Test → Build
-- Preview deployments on PRs
-- Promote to production on merge
+* **Lint → Type‑check → Test → Build**
+* **Preview deployments** on pull requests
+* **Promote to production** on merge to `main`
 
-_That’s it. Start small, measure, iterate._
+*That’s it. Start small, measure, iterate.*
+
+---
+
+## What you’ll get
+
+* A single CI workflow that runs quickly and fails fast
+* Automatic preview URLs for every PR (via Vercel Git Integration)
+* Production deploys only from `main`
+* Clear next steps for hardening (branch protection, coverage, e2e)
+
+> **Assumptions**: You’re using **Node 20+**, **npm**, **Next.js**, and deploying with **Vercel**. Swap tools as needed—the shape remains the same.
+
+---
+
+## 1) Project scripts
+
+Make sure your `package.json` has predictable scripts:
+
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  }
+}
+```
+
+> Use any test runner you like (Vitest, Jest, Playwright). The key is **non‑interactive**, **deterministic** runs in CI.
+
+---
+
+## 2) CI workflow (GitHub Actions)
+
+Create **`.github/workflows/ci.yml`**:
+
+```yaml
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Lint · Typecheck · Test · Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+```
+
+**Why this order?** Lint and types are fast and catch most issues. Tests give confidence. Build ensures the app actually compiles in CI.
+
+---
+
+## 3) Preview deployments for PRs
+
+Use **Vercel Git Integration** (recommended). Once connected:
+
+* Every **pull request** triggers a **Preview** deploy.
+* CI status shows a Preview URL like `https://pr-123-yourapp.vercel.app`.
+* Reviewers can test the change in a real environment.
+
+> No extra YAML needed—Vercel listens to Git events. If you prefer CLI‑based deploys, see the advanced alternative below.
+
+---
+
+## 4) Production on merge
+
+Merging to `main` triggers a **Production** deployment (again via Vercel Git Integration). Keep Production locked behind branch protection rules so nothing merges without green CI.
+
+### Protect `main`
+
+1. GitHub → **Settings** → **Branches** → **Branch protection rules**.
+2. Add rule for `main` → require **status checks** to pass (select your CI workflow).
+3. Optionally require **PR reviews** and **code owners**.
+
+---
+
+## (Optional) Deploy from CI with Vercel CLI
+
+If you want **CI‑driven** deploys (e.g., you don’t use the Git Integration), add a separate job:
+
+```yaml
+  deploy:
+    name: Deploy (Preview on PR, Prod on main)
+    needs: build
+    if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+      - name: Pull Vercel env
+        run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            vercel --token=${{ secrets.VERCEL_TOKEN }}
+          fi
+```
+
+You’ll need `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` in **GitHub Secrets**.
+
+---
+
+## 5) Environment variables
+
+* Put runtime secrets (API keys, DB URLs) in **Vercel → Project → Settings → Environment Variables**.
+* Use **Preview** vars for PRs and **Production** vars for `main`.
+* In CI‑driven deploys, `vercel pull` reads those vars and writes `.vercel/.env.*` files for the build.
+
+---
+
+## 6) Useful upgrades (when you’re ready)
+
+* **Coverage gates**: fail if coverage drops below X%.
+* **Playwright** e2e: catch integration regressions on critical flows.
+* **Release automation**: `release-please` for versioning + changelogs.
+* **Infra as Code**: Terraform for DBs/buckets/secrets; plan/apply via CI.
+* **Monorepo**: Nx/Turborepo; cache task outputs & only rebuild changed packages.
+* **Observability**: ship logs/metrics/traces on every deploy and expose a `/healthz` endpoint.
+
+---
+
+## Recap
+
+1. Keep the pipeline small and reliable.
+2. Preview everything in PRs.
+3. Only ship to prod from `main` with protections.
+
+When this feels boring, you’ve done it right—now add the next constraint and evolve it.
