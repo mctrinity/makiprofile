@@ -158,4 +158,14 @@ export const blogPosts: BlogPost[] = [
     imageAlt: "Screenshot of Augmented Intelligence",
     href: "/blog/augmented-intelligence",
   },
+  {
+    slug: "vibe-coding",
+    title: "Vibe Coding: Flow, Creativity, and the Future of Programming",
+    excerpt: "Why coding with vibes—rapid, intuitive exploration—matters for innovation and creativity.",
+    date: "2025-09-09",
+    readingTime: "7 min read",
+    image: "/blog/vibe-coding/cover.png",
+    imageAlt: "Screenshot of Vibe Coding",
+    href: "/blog/vibe-coding",
+  },
 ];

@@ -54,6 +54,16 @@ export const manifest: PostMeta[] = [
     imageAlt: "Augmented Intelligence diagram",
     tintClass: "bg-[#077777]/5 dark:bg-[#077777]/10",
   },
+  {
+    slug: "vibe-coding",
+    title: "Vibe Coding: Flow, Creativity, and the Future of Programming",
+    description: "Why coding with vibes—rapid, intuitive exploration—matters for innovation and creativity.",
+    date: "2025-09-09",
+    readingTime: "7 min",
+    image: "/blog/vibe-coding/cover.png",
+    imageAlt: "Vibe coding image",
+    tintClass: "bg-[#077777]/5 dark:bg-[#077777]/10",
+  },
 ];
 
 export function getAllSlugs(): { slug: string }[] {
