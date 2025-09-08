@@ -44,6 +44,16 @@ export const manifest: PostMeta[] = [
     imageAlt: "App wiring LLM tasks and tools",
     tintClass: "bg-[#077777]/5 dark:bg-[#077777]/10",
   },
+  {
+    slug: "augmented-intelligence",
+    title: "AI as Augmented Intelligence: Empowering Humans, Not Replacing Them",
+    description: "Why AI works best as a partner that enhances human decision-making.",
+    date: "2025-09-09",
+    readingTime: "6 min",
+    image: "/blog/augmented-intelligence/cover.png",
+    imageAlt: "Augmented Intelligence diagram",
+    tintClass: "bg-[#077777]/5 dark:bg-[#077777]/10",
+  },
 ];
 
 export function getAllSlugs(): { slug: string }[] {

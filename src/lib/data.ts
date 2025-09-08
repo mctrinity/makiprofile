@@ -148,4 +148,14 @@ export const blogPosts: BlogPost[] = [
     imageAlt: "Screenshot of AI workflows",
     href: "/blog/ai-integration",
   },
+  {
+    slug: "augmented-intelligence",
+    title: "AI as Augmented Intelligence: Empowering Humans, Not Replacing Them",
+    excerpt: "Why AI works best as a partner that enhances human decision-making.",
+    date: "2025-09-09",
+    readingTime: "6 min read",
+    image: "/blog/augmented-intelligence/cover.png",
+    imageAlt: "Screenshot of Augmented Intelligence",
+    href: "/blog/augmented-intelligence",
+  },
 ];
