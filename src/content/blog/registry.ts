@@ -64,6 +64,16 @@ export const manifest: PostMeta[] = [
     imageAlt: "Vibe coding image",
     tintClass: "bg-[#077777]/5 dark:bg-[#077777]/10",
   },
+  {
+    slug: "superintelligence",
+    title: "Superintelligence: Hype, Hope, and Hard Questions",
+    description: "Exploring the myths, possibilities, and debates around AI surpassing human intelligence.",
+    date: "2025-09-09",
+    readingTime: "9 min",
+    image: "/blog/superintelligence/cover.png",
+    imageAlt: "Superintelligence image",
+    tintClass: "bg-[#077777]/5 dark:bg-[#077777]/10",
+  },
 ];
 
 export function getAllSlugs(): { slug: string }[] {

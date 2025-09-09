@@ -168,4 +168,14 @@ export const blogPosts: BlogPost[] = [
     imageAlt: "Screenshot of Vibe Coding",
     href: "/blog/vibe-coding",
   },
+  {
+    slug: "superintelligence",
+    title: "Superintelligence: Hype, Hope, and Hard Questions",
+    excerpt: "Exploring the myths, possibilities, and debates around AI surpassing human intelligence.",
+    date: "2025-09-09",
+    readingTime: "9 min read",
+    image: "/blog/superintelligence/cover.png",
+    imageAlt: "Screenshot of Superintelligence",
+    href: "/blog/superintelligence",
+  },
 ];
