@@ -2,10 +2,10 @@
 import { Linkedin, Instagram, Twitter, Facebook } from "lucide-react";
 
 const SOCIALS = {
-  linkedin: "https://www.linkedin.com/in/your-handle",
-  instagram: "https://www.instagram.com/your-handle",
-  x: "https://x.com/your-handle",             // uses Twitter icon
-  facebook: "https://facebook.com/your-handle",
+  linkedin: "https://www.linkedin.com/in/mary-ann-dizon-ba336436/",
+  instagram: "https://www.instagram.com/makio143/",
+  x: "https://x.com/goodbyegirl924",             // uses Twitter icon
+  facebook: "https://www.facebook.com/blink924",
 };
 
 export default function Footer() {
