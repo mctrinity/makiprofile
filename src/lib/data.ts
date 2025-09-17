@@ -178,4 +178,14 @@ export const blogPosts: BlogPost[] = [
     imageAlt: "Screenshot of Superintelligence",
     href: "/blog/superintelligence",
   },
+  {
+    slug: "mcp-vs-vibe",
+    title: "MCP vs Vibe Coding: Protocols, Vibes, and the Future of AI Development",
+    excerpt: "How Model Context Protocol (MCP) and vibe coding represent two different but complementary paths in AI-driven software development.",
+    date: "2025-09-17",
+    readingTime: "9 min read",
+    image: "/blog/mcp-vs-vibe/cover.png",
+    imageAlt: "Screenshot of MCP",
+    href: "/blog/mcp-vs-vibe",
+  },
 ];

@@ -74,6 +74,16 @@ export const manifest: PostMeta[] = [
     imageAlt: "Superintelligence image",
     tintClass: "bg-[#077777]/5 dark:bg-[#077777]/10",
   },
+  {
+    slug: "mcp-vs-vibe",
+    title: "MCP vs Vibe Coding: Protocols, Vibes, and the Future of AI Development",
+    description: "How Model Context Protocol (MCP) and vibe coding represent two different but complementary paths in AI-driven software development.",
+    date: "2025-09-17",
+    readingTime: "9 min",
+    image: "/blog/mcp-vs-vibe/cover.png",
+    imageAlt: "MCP image",
+    tintClass: "bg-[#077777]/5 dark:bg-[#077777]/10",
+  },
 ];
 
 export function getAllSlugs(): { slug: string }[] {
