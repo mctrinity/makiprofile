@@ -6,20 +6,19 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
-type NavLink = { href: string; label: string; hideOnBlog?: boolean };
+type NavLink = { href: string; label: string };
 
 const LINKS: NavLink[] = [
-  { href: "/#about", label: "About", hideOnBlog: true },
-  { href: "/#projects", label: "Projects", hideOnBlog: true },
+  { href: "/about", label: "About" },
+  { href: "/projects", label: "Projects" },
   { href: "/blog", label: "Blog" },
-  { href: "/#contact", label: "Contact", hideOnBlog: true },
+  { href: "/contacts", label: "Contact" },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-  const isBlog = pathname?.startsWith("/blog");
-  const visibleLinks = LINKS.filter((l) => !(isBlog && l.hideOnBlog));
+  const visibleLinks = LINKS;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -51,7 +50,7 @@ export default function Navbar() {
 
         <ul className="flex items-center gap-5 text-sm">
           {visibleLinks.map((l) => {
-            const isActive = l.href === "/blog" && isBlog;
+            const isActive = pathname === l.href || (l.href === "/blog" && pathname?.startsWith("/blog"));
             return (
               <li key={l.href}>
                 <Link
